@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Grid, Stack, TextField, Typography } from '@mui/material';
 import MainCard from './components/MainCard';
 // import Menu from "./components/Menu";
@@ -6,11 +6,22 @@ import HeaderDog from './components/HeaderDog';
 import Sky from './components/Sky';
 import Footers from './components/Footer';
 import { useAuth } from './components/Authorization';
+import { useNavigate } from 'react-router';
 
 const HomePage = () => {
-  const [value, setValue] = useState('');
+  const navigate = useNavigate();
   const { user } = useAuth();
-  console.log('Homepage User:', user);
+  // console.log('Homepage User:', user);
+
+  useEffect(() => {
+    console.log('Homepage User:', user);
+    if (!user) {
+      console.log('there is no user');
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   return (
     <div>
@@ -53,32 +64,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-//  <Grid
-//    container
-//    item
-//    xs={12}
-//    sx={{
-//      position: "fixed",
-//      top: 0,
-//      width: "100%",
-//      height: { xs: "5%", md: "5%" },
-//    }}
-//  >
-//    <Grid
-//      container
-//      alignItems="center"
-//      justifyContent="space-between"
-//      marginTop={-1}
-//    >
-//      <Grid item>{/* <Menu /> */}</Grid>
-//      <Grid item>
-//        <Button size="small" color="secondary" variant="text">
-//          Button 1
-//        </Button>
-//        <Button size="small" color="secondary" variant="text">
-//          Button 2
-//        </Button>
-//      </Grid>
-//    </Grid>
-//  </Grid>;

@@ -14,6 +14,7 @@ router.post(
   // sessionController.startSession,
   // cookieController.setSSIDCookie,
   (req, res) => {
+    console.log(res.locals.newUser);
     res.status(200).json(res.locals.newUser);
     if (res.locals.session) {
       console.log('Signed up successfully!');
@@ -56,6 +57,10 @@ router.post(
   }
 );
 
+router.delete('/deleteDog/:dogId', dogController.deleteDog, (req, res) => {
+  console.log('dog deleted: ', res.locals.deletedDog);
+  res.status(200).json({ deleted: res.locals.deletedDog });
+});
 // app.use('/homepage', sessionController.isLoggedIn, (req, res) => {
 //   // if (res.locals.session) {
 //   console.log('Going to homepage');

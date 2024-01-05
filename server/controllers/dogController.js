@@ -51,6 +51,7 @@ dogController.addDog = (req, res, next) => {
 dogController.saveDogPhoto = (req, res, next) => {
   try {
     const imageUrl = res.locals.imageUrl;
+    if (!imageUrl) return next();
     const base64Data = imageUrl.split(',')[1];
     imageBuffer = Buffer.from(base64Data, 'base64');
     const targetDirectory = path.join(__dirname, '../downloadedImages');
@@ -70,7 +71,8 @@ dogController.saveDogPhoto = (req, res, next) => {
 
 dogController.updateDogPhoto = (req, res, next) => {
   const localImageUrl = res.locals.localImageUrl;
-  pool
+  if (!localImageUrl) return next();
+  return pool
     .query('UPDATE dogs SET photo = $1 WHERE dog_id =$2 RETURNING *', [
       localImageUrl,
       res.locals.currentDog.dog_id,
@@ -81,6 +83,20 @@ dogController.updateDogPhoto = (req, res, next) => {
       next({
         log: `Error happened at middleware dogController.updateDogPhoto ${error}`,
         message: { error: 'Dog database profile creation error' },
+      })
+    );
+};
+
+dogController.deleteDog = (req, res, next) => {
+  const dogId = req.params.dogId;
+  return pool
+    .query('DELETE FROM dogs WHERE dog_id = $1 RETURNING *;', [dogId])
+    .then((data) => (res.locals.deletedDog = data.rows[0]))
+    .then(() => next())
+    .catch((error) =>
+      next({
+        log: `Error happened at middleware dogController.deleteDog  ${error}`,
+        message: { error: 'error deleting dog' + error },
       })
     );
 };
@@ -116,10 +132,6 @@ dogController.updateDogPhoto = (req, res, next) => {
 
 dogController.fetchDogs = async (req, res, next) => {
   console.log('fetchDogs started');
-  // const userId = req.body.ssid;
-  // const role = req.body.role;
-  // const dogs = [];
-  //query text
   const user_id = req.params.userId;
   try {
     // if (role === 'owner') {

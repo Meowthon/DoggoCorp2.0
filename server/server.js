@@ -10,12 +10,6 @@ const apiRouter = require('./routes/router');
 
 const PORT = process.env.PORT || 3000;
 
-app.use((req, res, next) => {
-  // Set the Referrer-Policy header to no-referrer-when-downgrade
-  res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
-  next();
-});
-
 app.use(express.json({ limit: '10mb' }));
 app.use(cors());
 app.use(cookieParser());
@@ -56,17 +50,15 @@ app.post('/verify-token', async (req, res) => {
   }
 });
 
+app.use((req, res, next) => {
+  // Set the Referrer-Policy header to no-referrer-when-downgrade
+  res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+  next();
+});
+
 app.use(
   '/downloadedImages',
-  (req, res, next) => {
-    console.log('/downloadedImages route hit');
-    return next();
-  },
-  (req, res, next) => {
-    express
-      .static(path.resolve(__dirname, 'downloadedImages'))(req, res, next)
-      .catch(next);
-  }
+  express.static(path.resolve(__dirname, 'downloadedImages'))
 );
 
 // set up routing to routes here

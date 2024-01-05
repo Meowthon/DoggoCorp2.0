@@ -9,8 +9,6 @@
   left: 0;
   width: 100%;
   height: 130px;
-  background-image: url(/assets/grass_w_less_dirt.png)
-    url(/assets/grass_repeat.png);
 }
 
 .dog {

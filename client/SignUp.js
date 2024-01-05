@@ -103,9 +103,10 @@ export default function SignUp() {
     };
     console.log('newUser: ', newUser);
     try {
+      console.log('trying to fetch add user');
       const signedUpUser = await createUser(newUser);
-      updateUser(signedUpUser);
       console.log('in SignUp.js line 109', signedUpUser);
+      updateUser(signedUpUser);
       return signedUpUser;
     } catch (error) {
       console.error('Error creating user:', error);

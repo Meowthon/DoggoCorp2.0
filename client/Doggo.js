@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import Footers from './components/Footer';
 import Sky from './components/Sky';
 import HeaderDog from './components/HeaderDog';
-import dayjs from 'dayjs';
 import {
   Box,
   Button,
@@ -22,6 +21,7 @@ import {
 import { blue } from '@mui/material/colors';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -36,185 +36,21 @@ import {
   DoggoBoxAddingStyle,
 } from './stylesheets/DoggoStyle';
 import { useAuth } from './components/Authorization';
-
-//for custom file upload button
-// import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-// import { styled } from "@mui/material/styles";
-// import { DigitalClock } from '@mui/x-date-pickers/DigitalClock';
-// import DateFnsUtils from '@date-io/date-fns';
+import { DateField } from '@mui/x-date-pickers';
 
 const DogInputPage = () => {
-  const { user, addDog } = useAuth();
-  console.log('in Doggo.js', user);
-  const [dogData, setDogData] = useState({
-    name: '',
-    owner_id: user.user_id,
-    birthday: '',
-    age: '',
-    weight: '',
-    breed: '',
-    meals: [],
-    medications: [],
-    groomers: [],
-    miscellaneous: [],
-    photo: null,
-  });
-
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    if (e.target.name.startsWith('meal-')) {
-      // Handle meal changes
-      const index = parseInt(e.target.name.split('-')[1], 10);
-      const field = e.target.name.split('-')[2];
-      handleMealChange(index, field, e.target.value);
-    } else {
-      setDogData({ ...dogData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    console.log('Doggo page User:', user);
+    if (!user) {
+      console.log('there is no user');
+      navigate('/');
     }
-  };
+  }, [user, navigate]);
 
-  const handleMealChange = (index, field, value) => {
-    const newMeals = [...dogData.meals];
-    newMeals[index][field] = value;
-    setDogData({ ...dogData, meals: newMeals });
-  };
-
-  const handleAddMeal = () => {
-    const newMeal = { type: '', instructions: '', times: dayjs() };
-    setDogData({ ...dogData, meals: [...dogData.meals, newMeal] });
-  };
-
-  const handleRemoveMeal = (index) => {
-    const updatedMeals = dogData.meals.filter((_, i) => i !== index);
-    setDogData({ ...dogData, meals: updatedMeals });
-  };
-
-  const handleMealTypeChange = (index, value) => {
-    const updatedMeals = [...dogData.meals];
-    updatedMeals[index].type = value;
-    setDogData({ ...dogData, meals: updatedMeals });
-  };
-
-  // Handler for adding medication
-  const handleAddMedication = () => {
-    const addMedications = { name: '', instructions: '', date: dayjs() };
-    setDogData({
-      ...dogData,
-      medications: [...dogData.medications, addMedications],
-    });
-  };
-
-  // Handler for removing medication
-  const handleRemoveMedication = (index) => {
-    const removeMedications = dogData.medications.filter((_, i) => i !== index);
-    setDogData({ ...dogData, medications: removeMedications });
-  };
-
-  // Handler for medication changes
-  const handleMedicationChange = (index, field, value) => {
-    const updateMedications = [...dogData.medications];
-    updateMedications[index][field] = value;
-    setDogData({ ...dogData, medications: updateMedications });
-  };
-
-  // Handler for groomers
-  const handleAddGroomer = () => {
-    const newGroomer = {
-      name: '',
-      time: dayjs(),
-      date: dayjs(),
-      instructions: '',
-    };
-    setDogData({ ...dogData, groomers: [...dogData.groomers, newGroomer] });
-  };
-
-  const handleGroomerChange = (index, field, value) => {
-    const updatedGroomers = [...dogData.groomers];
-    updatedGroomers[index][field] = value;
-    setDogData({ ...dogData, groomers: updatedGroomers });
-  };
-  const handleRemoveGroomer = (index) => {
-    const removeGroomer = dogData.groomers.filter((_, i) => i !== index);
-    setDogData({ ...dogData, groomers: removeGroomer });
-  };
-
-  // Handler for adding misc
-  const handleAddMisc = () => {
-    const newMisc = {
-      name: '',
-      instructions: '',
-      time: dayjs(),
-      date: dayjs(),
-    };
-    setDogData({
-      ...dogData,
-      miscellaneous: [...dogData.miscellaneous, newMisc],
-    });
-  };
-
-  // Handler for removing misc
-  const handleRemoveMisc = (index) => {
-    const newMisc = dogData.miscellaneous.filter((_, i) => i !== index);
-    setDogData({ ...dogData, miscellaneous: newMisc });
-  };
-
-  // Handler for misc changes
-  const handleMiscChange = (index, field, value) => {
-    const newMisc = [...dogData.misc];
-    newMisc[index][field] = value;
-    setDogData({ ...dogData, misc: newMisc });
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const dataUrl = reader.result;
-        setDogData({ ...dogData, photo: dataUrl });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(dogData);
-    // Submit logic here
-    try {
-      const response = await addDog(dogData);
-
-      console.log('added dog is ', response);
-
-      // Check if the request was successful
-      if (response.ok) {
-        console.log('Dog added successfully!');
-        navigate('/homepage');
-        // Optionally, reset the form or perform other actions
-      } else {
-        console.error('Error adding dog:', response.statusText);
-        navigate('/homepage');
-        // Handle errors or display error messages to the user
-      }
-    } catch (error) {
-      console.error('Error adding dog:', error.message);
-    }
-  };
-
-  // for file upload button
-  // const VisuallyHiddenInput = styled("input")({
-  //   clip: "rect(0 0 0 0)",
-  //   clipPath: "inset(50%)",
-  //   height: 1,
-  //   overflow: "hidden",
-  //   position: "absolute",
-  //   bottom: 0,
-  //   left: 0,
-  //   whiteSpace: "nowrap",
-  //   width: 1,
-  // });
-
-  const boxBorder = blue[50];
+  if (!user) return null;
 
   return (
     <div>
@@ -227,344 +63,333 @@ const DogInputPage = () => {
         minHeight='80vh' // Full screen height
         // sx={{ backgroundColor: 'pink' }}
       >
-        <Box component='form' onSubmit={handleSubmit} noValidate sx={formStyle}>
-          <Typography {...DoggoTypographyStyle}>
-            Add Your Dog's Information
-          </Typography>
-          <TextField
-            label="Dog's Name"
-            name='name'
-            type='text'
-            value={dogData.name}
-            onChange={handleChange}
-            required
-            fullWidth
-            autoFocus
-            margin='normal'
-            sx={DoggoTextFieldStyle}
-          />
-          <Box sx={DoggoBoxAgeAndWeightStyle}>
-            <TextField
-              label='Age'
-              name='age'
-              type='text'
-              value={dogData.age}
-              onChange={handleChange}
-              required
-              sx={DoggoTextFieldStyle}
-            />
-            <TextField
-              label='Weight'
-              name='weight'
-              type='text'
-              value={dogData.weight}
-              onChange={handleChange}
-              required
-              sx={DoggoTextFieldStyle}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position='end'>lbs</InputAdornment>
-                ),
-              }}
-            />
-          </Box>
-          <input
-            type='date'
-            name='birthday'
-            onChange={(e) => {
-              setDogData({ ...dogData, birthday: e.target.value });
-              console.log('birthday is ', e.target.value);
-            }}
-          />
-          <TextField
-            borderRadius='30'
-            label='Breed'
-            name='breed'
-            type='text'
-            fullWidth
-            margin='normal'
-            value={dogData.breed}
-            onChange={handleChange}
-            sx={DoggoTextFieldStyle}
-          />
-          {/* handles meals adding/subtracting */}
-          <Box sx={DoggoBoxAddingStyle}>
-            <Typography variant='h6' sx={{ mr: 2 }}>
-              Add Meals
-            </Typography>
-            <IconButton onClick={handleAddMeal}>
-              <AddCircleIcon color='primary' />
-            </IconButton>
-          </Box>
-
-          {dogData.meals.map((meal, index) => (
-            <Box key={index} sx={{ width: '100%', mb: 2 }}>
-              <Typography sx={{ mr: 2, marginBottom: 2 }}>{`Meal ${
-                index + 1
-              }:`}</Typography>
-              <Box sx={DoggoBoxDataStyle}>
-                <FormControl sx={{ mr: 1, flex: 1 }}>
-                  <InputLabel htmlFor={`meal-type-select-${index}`}>
-                    Meal Type
-                  </InputLabel>
-                  <Select
-                    focused
-                    labelId={`meal-type-label-${index}`}
-                    label='Meal Type'
-                    id={`meal-type-select-${index}`}
-                    value={meal.type}
-                    onChange={(e) =>
-                      handleMealTypeChange(index, e.target.value)
-                    }
-                    sx={DoggoTextFieldStyle}
-                  >
-                    <MenuItem value='Breakfast'>Breakfast</MenuItem>
-                    <MenuItem value='Lunch'>Lunch</MenuItem>
-                    <MenuItem value='Dinner'>Dinner</MenuItem>
-                    <MenuItem value='Snack'>Snack</MenuItem>
-                  </Select>
-                </FormControl>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <TimePicker
-                    label='Time'
-                    name={`meal-${index}-time`}
-                    value={meal.times}
-                    onChange={(newTime) =>
-                      handleMealChange(index, 'times', newTime)
-                    }
-                    sx={DoggoTextFieldStyle}
-                    renderInput={(params) => (
-                      <TextField {...params} sx={{ flex: 2 }} />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Box>
-              <TextField
-                label='Instructions:'
-                fullWidth
-                multiline
-                name={`meal-${index}-instructions`}
-                value={meal.instructions}
-                onChange={handleChange}
-                margin='normal'
-                sx={DoggoTextFieldStyle}
-              />
-
-              <IconButton onClick={() => handleRemoveMeal(index)}>
-                <RemoveCircleIcon color='primary' />
-              </IconButton>
-            </Box>
-          ))}
-          {/* handles meds adding/subtracting */}
-          <Box sx={DoggoBoxAddingStyle}>
-            <Typography variant='h6' sx={{ mr: 2 }}>
-              Add Medication
-            </Typography>
-            <IconButton onClick={handleAddMedication}>
-              <AddCircleIcon color='primary' />
-            </IconButton>
-          </Box>
-
-          {dogData.medications.map((medications, index) => (
-            <Box key={index} sx={{ width: '100%', mb: 2 }}>
-              <Typography sx={{ mr: 2, mb: 2 }}>{`Medication ${
-                index + 1
-              }:`}</Typography>
-              <Box sx={DoggoBoxDataStyle}>
-                <FormControl sx={{ mr: 1, flex: 1 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label='Time'
-                      name={`medications-${index}-time`}
-                      value={medications.times}
-                      onChange={(newTime) =>
-                        handleMedicationChange(index, 'times', newTime)
-                      }
-                      sx={DoggoTextFieldStyle}
-                      renderInput={(params) => (
-                        <TextField {...params} sx={{ flex: 2 }} />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label='Date'
-                    name={`medications-${index}-date`}
-                    value={medications.times}
-                    onChange={(newDate) =>
-                      handleMedicationChange(index, 'date', newTime)
-                    }
-                    sx={DoggoTextFieldStyle}
-                    renderInput={(params) => (
-                      <TextField {...params} sx={{ flex: 2 }} />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Box>
-              <TextField
-                label='Instructions:'
-                fullWidth
-                multiline
-                name={`medications-${index}-instructions`}
-                value={medications.instructions}
-                onChange={handleChange}
-                margin='normal'
-                sx={DoggoTextFieldStyle}
-              />
-              <IconButton onClick={() => handleRemoveMedication(index)}>
-                <RemoveCircleIcon color='primary' />
-              </IconButton>
-            </Box>
-          ))}
-
-          <Box sx={DoggoBoxAddingStyle}>
-            <Typography variant='h6' sx={{ mr: 2 }}>
-              Add Groomer
-            </Typography>
-            <IconButton onClick={handleAddGroomer}>
-              <AddCircleIcon color='primary' />
-            </IconButton>
-          </Box>
-          {/* handles groomers */}
-          {dogData.groomers.map((groomers, index) => (
-            <Box key={index} sx={{ width: '100%', mb: 2 }}>
-              <Box sx={DoggoBoxDataStyle}>
-                <FormControl sx={{ mr: 1, flex: 1 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label='Time'
-                      name={`groomers-${index}-time`}
-                      value={groomers.times}
-                      onChange={(newTime) =>
-                        handleGroomerChange(index, 'times', newTime)
-                      }
-                      sx={DoggoTextFieldStyle}
-                      renderInput={(params) => (
-                        <TextField {...params} sx={{ flex: 2 }} />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label='Date'
-                    name={`groomers-${index}-time`}
-                    value={groomers.times}
-                    onChange={(newDate) =>
-                      handleGroomerChange(index, 'date', newDate)
-                    }
-                    sx={DoggoTextFieldStyle}
-                    renderInput={(params) => (
-                      <TextField {...params} sx={{ flex: 2 }} />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Box>
-              <TextField
-                label='Instructions'
-                multiline
-                fullWidth
-                margin='normal'
-                name={`groomers-${index}-instructions`}
-                value={groomers.instructions}
-                onChange={(e) =>
-                  handleGroomerChange(index, 'instructions', e.target.value)
-                }
-                sx={DoggoTextFieldStyle}
-              />
-              <IconButton onClick={() => handleRemoveGroomer(index)}>
-                <RemoveCircleIcon color='primary' />
-              </IconButton>
-            </Box>
-          ))}
-
-          {/* handles misc adding/subtracting */}
-          <Box sx={DoggoBoxAddingStyle}>
-            <Typography variant='h6' sx={{ mr: 2 }}>
-              Add Miscellaneous
-            </Typography>
-            <IconButton onClick={handleAddMisc}>
-              <AddCircleIcon color='primary' />
-            </IconButton>
-          </Box>
-
-          {dogData.miscellaneous.map((miscellaneous, index) => (
-            <Box key={index} sx={{ width: '100%', mb: 2 }}>
-              <Typography sx={{ mr: 2, marginBottom: 2 }}>{`Misc ${
-                index + 1
-              }:`}</Typography>
-              <Box sx={DoggoBoxDataStyle}>
-                <FormControl sx={{ mr: 1, flex: 1 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label='Time'
-                      name={`misc-${index}-time`}
-                      value={miscellaneous.times}
-                      onChange={(newTime) =>
-                        handleMiscChange(index, 'times', newTime)
-                      }
-                      sx={DoggoTextFieldStyle}
-                      renderInput={(params) => (
-                        <TextField {...params} sx={{ flex: 2 }} />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label='Date'
-                    name={`miscellaneous-${index}-date`}
-                    value={miscellaneous.times}
-                    onChange={(newDate) =>
-                      handleMiscChange(index, 'date', newTime)
-                    }
-                    sx={DoggoTextFieldStyle}
-                    renderInput={(params) => (
-                      <TextField {...params} sx={{ flex: 2 }} />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Box>
-              <TextField
-                label='Instructions:'
-                fullWidth
-                multiline
-                name={`misc-${index}-instructions`}
-                value={miscellaneous.instructions}
-                onChange={handleChange}
-                margin='normal'
-                sx={DoggoTextFieldStyle}
-              />
-              <IconButton onClick={() => handleRemoveMisc(index)}>
-                <RemoveCircleIcon color='primary' />
-              </IconButton>
-            </Box>
-          ))}
-
-          <Input
-            type='file'
-            name='photo'
-            content='Upload File'
-            onChange={handlePhotoChange}
-            cursor='pointer'
-            size='90'
-          />
-
-          <Button
-            type='submit'
-            fullWidth
-            variant='contained'
-            onClick={handleSubmit}
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Submit
-          </Button>
-        </Box>
+        <DogForm userId={user.user_id} />
       </Box>
       <Footers />
     </div>
   );
 };
+
+function DogForm({ userId }) {
+  const [meals, setMeals] = useState([]);
+  const [medications, setMedications] = useState([]);
+  const [groomers, setGroomers] = useState([]);
+  const [misc, setMisc] = useState([]);
+  const { addDog } = useAuth();
+  const navigate = useNavigate();
+
+  const [photoUrl, setPhotoUrl] = useState(null);
+
+  return (
+    <Box
+      component='form'
+      noValidate
+      sx={formStyle}
+      onSubmit={async (e) => {
+        e.preventDefault();
+
+        const dogData = {
+          name: e.target.name.value,
+          owner_id: userId,
+          birthday: e.target.birthday.value,
+          age: e.target.age.value,
+          weight: e.target.weight.value,
+          breed: e.target.breed.value,
+          meals: JSON.stringify(meals),
+          medication: JSON.stringify(medications),
+          groomer: JSON.stringify(groomers),
+          miscellaneous: JSON.stringify(misc),
+          photo: photoUrl,
+        };
+
+        try {
+          const response = await addDog(dogData);
+          console.log('added dog is ', response);
+          navigate('/homepage');
+        } catch (error) {
+          console.log('Error adding dog:', error.message);
+        }
+      }}
+    >
+      <Typography {...DoggoTypographyStyle}>
+        Add Your Dog's Information
+      </Typography>
+
+      <TextField
+        label="Dog's Name"
+        name='name'
+        type='text'
+        required
+        fullWidth
+        autoFocus
+        margin='normal'
+        sx={DoggoTextFieldStyle}
+      />
+
+      <Box sx={DoggoBoxAgeAndWeightStyle}>
+        <TextField
+          label='Age'
+          name='age'
+          type='text'
+          required
+          sx={DoggoTextFieldStyle}
+        />
+        <DateField
+          label='Birthday'
+          name='birthday'
+          required
+          sx={DoggoTextFieldStyle}
+        />
+        <TextField
+          label='Weight'
+          name='weight'
+          type='text'
+          required
+          sx={DoggoTextFieldStyle}
+          InputProps={{
+            endAdornment: <InputAdornment position='end'>lbs</InputAdornment>,
+          }}
+        />
+      </Box>
+
+      <TextField
+        label='Breed'
+        name='breed'
+        type='text'
+        fullWidth
+        margin='normal'
+        sx={DoggoTextFieldStyle}
+      />
+
+      <AddingMeal meals={meals} setMeals={setMeals} />
+
+      <AddingOthers
+        dataName='Medication'
+        data={medications}
+        setData={setMedications}
+      />
+
+      <AddingOthers dataName='Groomer' data={groomers} setData={setGroomers} />
+
+      <AddingOthers dataName='Miscellaneous' data={misc} setData={setMisc} />
+
+      <Input
+        type='file'
+        name='photo'
+        content='Upload File'
+        cursor='pointer'
+        size='90'
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+              const dataUrl = reader.result;
+              setPhotoUrl(dataUrl);
+            };
+            reader.readAsDataURL(file);
+          }
+        }}
+      />
+
+      <Button
+        type='submit'
+        fullWidth
+        variant='contained'
+        sx={{ mt: 3, mb: 2, zIndex: 10 }}
+      >
+        Submit
+      </Button>
+    </Box>
+  );
+}
+
+function AddingMeal({ meals, setMeals }) {
+  console.log(meals);
+  return (
+    <Fragment>
+      <Box sx={DoggoBoxAddingStyle}>
+        <Typography variant='h6' sx={{ mr: 2 }}>
+          Add Meals
+        </Typography>
+        <IconButton
+          onClick={() =>
+            setMeals([...meals, { type: '', instructions: '', times: '' }])
+          }
+        >
+          <AddCircleIcon color='primary' />
+        </IconButton>
+      </Box>
+
+      {meals.map((meal, index) => (
+        <Box key={index} sx={{ width: '100%', mb: 2 }}>
+          <Typography sx={{ mr: 2, marginBottom: 2 }}>{`Meal ${
+            index + 1
+          }:`}</Typography>
+
+          <Box sx={DoggoBoxDataStyle}>
+            <FormControl sx={{ mr: 1, flex: 1 }}>
+              <InputLabel htmlFor={`meal-type-select-${index}`}>
+                Meal Type
+              </InputLabel>
+              <Select
+                focused
+                labelId={'type'}
+                name={`meal-${index}-type`}
+                label='Meal Type'
+                onChange={(e) =>
+                  setMeals(
+                    meals.map((m, i) =>
+                      i === index ? { ...m, type: e.target.value } : m
+                    )
+                  )
+                }
+                id={`meal-type-select-${index}`}
+                sx={DoggoTextFieldStyle}
+              >
+                <MenuItem value='Breakfast'>Breakfast</MenuItem>
+                <MenuItem value='Lunch'>Lunch</MenuItem>
+                <MenuItem value='Dinner'>Dinner</MenuItem>
+                <MenuItem value='Snack'>Snack</MenuItem>
+              </Select>
+            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimePicker
+                label='Time'
+                name={`meal-${index}-times`}
+                value={meal.times}
+                onChange={(newTime) =>
+                  setMeals(
+                    meals.map((m, i) =>
+                      i === index ? { ...m, times: newTime } : m
+                    )
+                  )
+                }
+                sx={DoggoTextFieldStyle}
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ flex: 2 }} />
+                )}
+              />
+            </LocalizationProvider>
+          </Box>
+          <TextField
+            label='Instructions:'
+            fullWidth
+            type='text'
+            multiline
+            onChange={(e) =>
+              setMeals(
+                meals.map((m, i) =>
+                  i === index ? { ...m, instructions: e.target.value } : m
+                )
+              )
+            }
+            name={`meal-${index}-instruction`}
+            margin='normal'
+            sx={DoggoTextFieldStyle}
+          />
+
+          <IconButton
+            onClick={() => {
+              setMeals(meals.filter((m, i) => i !== index));
+            }}
+          >
+            <RemoveCircleIcon color='primary' />
+          </IconButton>
+        </Box>
+      ))}
+    </Fragment>
+  );
+}
+
+function AddingOthers({ data, setData, dataName }) {
+  return (
+    <Fragment>
+      <Box sx={DoggoBoxAddingStyle}>
+        <Typography variant='h6' sx={{ mr: 2 }}>
+          Add {dataName}
+        </Typography>
+        <IconButton
+          onClick={() =>
+            setData([...data, { times: '', instructions: '', dates: '' }])
+          }
+        >
+          <AddCircleIcon color='primary' />
+        </IconButton>
+      </Box>
+
+      {data.map((item, index) => (
+        <Box key={index} sx={{ width: '100%', mb: 2 }}>
+          <Typography sx={{ mr: 2, mb: 2 }}>{`${dataName} ${
+            index + 1
+          }:`}</Typography>
+          <Box sx={DoggoBoxDataStyle}>
+            <FormControl sx={{ mr: 1, flex: 1 }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <TimePicker
+                  label='Time'
+                  name={`${dataName.toLowerCase()}-${index}-time`}
+                  value={item.times}
+                  onChange={(newTime) =>
+                    setData(
+                      data.map((el, i) =>
+                        i === index ? { ...el, times: newTime } : el
+                      )
+                    )
+                  }
+                  sx={DoggoTextFieldStyle}
+                  renderInput={(params) => (
+                    <TextField {...params} sx={{ flex: 2 }} />
+                  )}
+                />
+              </LocalizationProvider>
+            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label='Date'
+                name={`${dataName.toLowerCase()}-${index}-date`}
+                value={data.dates}
+                onChange={(newDate) =>
+                  setData(
+                    data.map((el, i) =>
+                      i === index ? { ...el, dates: newDate } : el
+                    )
+                  )
+                }
+                sx={DoggoTextFieldStyle}
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ flex: 2 }} />
+                )}
+              />
+            </LocalizationProvider>
+          </Box>
+          <TextField
+            label='Instructions:'
+            fullWidth
+            multiline
+            name={`${dataName.toLowerCase()}-${index}-instructions`}
+            value={item.instructions}
+            onChange={(e) =>
+              setData(
+                data.map((el, i) =>
+                  i === index ? { ...el, instructions: e.target.value } : el
+                )
+              )
+            }
+            margin='normal'
+            sx={DoggoTextFieldStyle}
+          />
+          <IconButton
+            onClick={() => {
+              setData(data.filter((el, i) => i !== index));
+            }}
+          >
+            <RemoveCircleIcon color='primary' />
+          </IconButton>
+        </Box>
+      ))}
+    </Fragment>
+  );
+}
 
 export default DogInputPage;

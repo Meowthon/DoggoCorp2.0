@@ -7,7 +7,7 @@ export const formStyle = {
   justifyContent: 'center',
   padding: 3,
   boxShadow: 3,
-  borderradius: 2,
+  borderRadius: 2,
   backgroundColor: 'rgba(255, 255, 255, 0.7)', //transparent
   border: 2,
   borderColor: blue[50],

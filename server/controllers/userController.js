@@ -33,10 +33,9 @@ userController.addUser = async (req, res, next) => {
     );
     console.log('result at userController.addUsers: ', result.rows[0]);
     // Send the inserted dog data back to the client if needed
-    if (result.rows[0].username && result.rows[0].password) {
-      res.locals.newUser = result.rows[0];
-      return next();
-  }
+
+    res.locals.newUser = result.rows[0];
+    return next();
   } catch (error) {
     return next({
       log: `Error happened at middleware userController.addUsers ${error}`,

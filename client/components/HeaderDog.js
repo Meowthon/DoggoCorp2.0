@@ -34,27 +34,7 @@ export default function HeaderDog() {
   const [state, setState] = React.useState({
     left: false,
   });
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
-  const handleSignOut = () => {
-    if (text === 'Logout') {
-      logout();
-      navigate('/');
-    }
-  };
-
-  const handleMenuClick = (text) => {
-    if (text === 'Add Dog') {
-      navigate('/addDog');
-    }
-    if (text === 'Profile') {
-      navigate('/homepage');
-    }
-  };
-
-  const shadowColor = blue[50];
   const renderMenu = (
     <div>
       <ThemeProvider theme={HeaderDogStyle.theme}>
@@ -71,7 +51,7 @@ export default function HeaderDog() {
           id='basic-menu'
           anchorEl={anchorEl}
           open={open}
-          onClose={handleClose}
+          onClose={() => setAnchorEl(null)}
           MenuListProps={{
             'aria-labelledby': 'basic-button',
           }}
@@ -80,13 +60,16 @@ export default function HeaderDog() {
           color='pink'
           style={{ backgroundColor: 'transparent' }}
         >
-          <MenuItem onClick={() => handleMenuClick('Profile')}>
-            My account
+          <MenuItem onClick={() => navigate('/homepage')}>My account</MenuItem>
+          <MenuItem onClick={() => navigate('/addDog')}>Add Dog</MenuItem>
+          <MenuItem
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+          >
+            Logout
           </MenuItem>
-          <MenuItem onClick={() => handleMenuClick('Add Dog')}>
-            Add Dog
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuClick('Logout')}>Logout</MenuItem>
         </Menu>
       </ThemeProvider>
     </div>
@@ -99,14 +82,7 @@ export default function HeaderDog() {
           {renderMenu}
           <Box sx={{ flexGrow: 1 }} />
 
-          <IconButton
-            style={{ backgroundColor: 'transparent' }}
-            // size="large"
-            // edge="start"
-            // color="inherit"
-            // aria-label="open drawer"
-            // sx={{ mr: 2 }}
-          ></IconButton>
+          <IconButton style={{ backgroundColor: 'transparent' }}></IconButton>
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             {/* // mail icon */}
             <IconButton
@@ -132,22 +108,6 @@ export default function HeaderDog() {
                 <NotificationsIcon />
               </Badge>
             </IconButton>
-            {/* // button for ipsom */}
-            {/* <Button
-              size="small"
-              color="secondary"
-              variant="text"
-              edge="end"
-              handles dog ipsom
-              onClick={handleProfileMenuOpen}
-            > */}
-            {/* // custom button  */}
-            {/* Button 1 */}
-            {/* chatroom button */}
-            {/* </Button>
-            <Button size="small" color="secondary" variant="text">
-              Button 2
-            </Button> */}
           </Box>
         </Toolbar>
       </Box>
